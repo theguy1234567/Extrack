@@ -13,7 +13,7 @@ export async function GET(req) {
     if (!token) {
       return NextResponse.json(
         { message: "Unauthorized req" },
-        { status: 400 },
+        { status: 401 },
       );
     }
 
@@ -24,15 +24,11 @@ export async function GET(req) {
       .populate("expenseCategory")
       .sort({ createdAt: -1 });
 
-    const TotalExpense = expenses.reduce((total, expense) => {
-      return total + expense.expenseAmount;
-    }, 0);
-
     return NextResponse.json(
       {
         message: "Expenses gathered",
         data: expenses,
-        totalExpense: TotalExpense,
+
         success: true,
       },
       { status: 200 },
@@ -70,7 +66,7 @@ export async function POST(req) {
     if (!token) {
       return NextResponse.json(
         { message: "Unauthorized req" },
-        { status: 400 },
+        { status: 401 },
       );
     }
     const decoded = jwt.verify(token, process.env.ACC_TOKEN_SEC);

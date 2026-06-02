@@ -14,6 +14,9 @@ export default function page() {
     try {
       setLoading(true);
       const res = await axios.post("/api/users/login", user);
+      if (res.status == 200) {
+        setLoading(false);
+      }
 
       console.log(res.data.message);
     } catch (error) {

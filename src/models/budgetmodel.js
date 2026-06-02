@@ -6,10 +6,10 @@ const BudgetSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    budegetCategory: {
-      type: Schema.Types.ObjectId,
-      ref: categories,
-    },
+    // budegetCategory: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: categories,
+    // }, add Budget Categories later as now expenses can have categories and also budgets they can have conflicts 
 
     periodType: {
       type: String,

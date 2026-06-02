@@ -3,13 +3,22 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 function Dashboard() {
-  const [totalExpense, setTotalExpense] = useState(0);
+  const [dashbaorddata, setdashboardData] = useState({
+    totalExpenses: 0,
+    totalIncomes: 0,
+    totalSavings: 0,
+  });
   async function getExp() {
     try {
-      const res = await axios.get("/api/users/addexpense", {
+      const res = await axios.get("/api/users/getdetails", {
         withCredentials: true,
       });
-      setTotalExpense(res.data.totalExpense);
+      console.log(res);
+      setdashboardData({
+        totalExpenses: res.data.totalExpenses,
+        totalIncomes: res.data.totalIncomes,
+        totalSavings: res.data.totalSavings,
+      });
     } catch (error) {
       console.log("something went wrong while fetching total expense");
       console.log(error);
@@ -27,18 +36,20 @@ function Dashboard() {
           {/* KPI Cards */}
           <div className="bg-blue-400 rounded-2xl px-4 py-4">
             Total Expenses
+            {dashbaorddata.totalExpenses}
             <br />
-            {totalExpense}
           </div>
 
           <div className="bg-blue-400 rounded-2xl px-4 py-4">
             Total Income
+            {dashbaorddata.totalIncomes}
             <br />
             Shows all-time income
           </div>
 
           <div className="bg-blue-400 rounded-2xl px-4 py-4">
             Total Savings
+            {dashbaorddata.totalSavings}
             <br />
             Income - Expenses
           </div>
