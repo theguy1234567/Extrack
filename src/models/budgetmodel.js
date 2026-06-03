@@ -5,11 +5,15 @@ const BudgetSchema = new mongoose.Schema(
     budgetAmount: {
       type: Number,
       required: true,
+      min: 1,
     },
-    // budegetCategory: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: categories,
-    // }, add Budget Categories later as now expenses can have categories and also budgets they can have conflicts 
+
+    budgetCategory: {
+      type: Schema.Types.ObjectId,
+      ref: "categories",
+      required: true,
+    },
+    // Budget and expenses can have categories might cause conflicts later check this
 
     periodType: {
       type: String,
@@ -29,8 +33,24 @@ const BudgetSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    status: {
+      type: String,
+      enum: ["progress", "completed"],
+      default: "progress",
+    },
   },
   { timestamps: true },
+);
+BudgetSchema.index(
+  {
+    createdBy: 1,
+    budgetCategory: 1,
+    startDate: 1,
+    endDate: 1,
+  },
+  {
+    unique: true,
+  },
 );
 
 const Budget =

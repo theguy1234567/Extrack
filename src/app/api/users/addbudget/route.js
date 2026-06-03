@@ -2,15 +2,31 @@ import { NextResponse } from "next/server";
 import connectToDB from "@/dbconfig/dbconfig";
 import Budget from "@/models/budgetmodel";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
-
-export async function GET() {
+export async function GET(req) {
   try {
     await connectToDB();
+    const token = req.cookies.get("token")?.value;
+    if (!token) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+    const decoded = jwt.verify(token, process.env.ACC_TOKEN_SEC);
 
-    const budgets = await Budget.find({}).sort({
-      createdAt: -1,
-    });
+    const budgets = await Budget.find({
+      createdBy: decoded.id,
+    })
+      .populate("budgetCategory")
+      .sort({
+        createdAt: -1,
+      });
     return NextResponse.json(
       { message: "budgets gathered succesfully", success: true, data: budgets },
       {
@@ -22,7 +38,7 @@ export async function GET() {
     return NextResponse.json(
       { message: "Something webt wront in budgets gatherin", success: false },
       {
-        status: 401,
+        status: 500,
       },
     );
   }
@@ -35,24 +51,63 @@ export async function POST(req) {
     if (!token) {
       return NextResponse.json(
         { message: "Unauthorized req" },
-        { status: 400 },
+        { status: 401 },
       );
     }
-    const { budgetAmount, periodType, startDate, endDate } = await req.json();
 
-    if (!budgetAmount || !periodType || !startDate || !endDate) {
+    const decodedToken = jwt.verify(token, process.env.ACC_TOKEN_SEC);
+
+    const userId = decodedToken.id;
+    const { budgetAmount, periodType, startDate, budgetCategory, endDate } = await req.json();
+    if (
+      !budgetAmount ||
+      !periodType ||
+      !startDate ||
+      !budgetCategory ||
+      !endDate
+    ) {
       return NextResponse.json(
         { message: "Pls enter all the fields" },
         { status: 401 },
       );
     }
-    const decodedToken = jwt.verify(token, process.env.ACC_TOKEN_SEC);
+    const budgetCategoryObjId = new mongoose.Types.ObjectId(budgetCategory);
+    //valdiating date endate < startdate
+    if (new Date(startDate) >= new Date(endDate)) {
+      return NextResponse.json(
+        {
+          message: "end date must be after start date",
+        },
+        { status: 400 },
+      );
+    }
 
-    const userId = decodedToken.id;
-    console.log(userId);
+    //existing budget overlaping date
+    const existingBudget = await Budget.findOne({
+      createdBy: userId,
+      budgetCategory: budgetCategoryObjId,
+      startDate: {
+        $lte: new Date(endDate),
+      },
+      endDate: {
+        $gte: new Date(startDate),
+      },
+    });
+    if (existingBudget) {
+      return NextResponse.json(
+        {
+          message:
+            "A budget already exists for this category during this period",
+        },
+        {
+          status: 409,
+        },
+      );
+    }
 
     const newBudget = new Budget({
       budgetAmount,
+      budgetCategory: budgetCategoryObjId,
       periodType,
       startDate,
       createdBy: userId,
@@ -66,7 +121,7 @@ export async function POST(req) {
         data: savedBudget,
       },
       {
-        status: 200,
+        status: 201,
       },
     );
   } catch (error) {

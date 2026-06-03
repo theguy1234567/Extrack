@@ -1,5 +1,5 @@
 import connectToDB from "@/dbconfig/dbconfig";
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server"; 
 import jwt from "jsonwebtoken";
 import Expense from "@/models/expensemodel";
 import Income from "@/models/incomemodel";
