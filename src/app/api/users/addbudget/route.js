@@ -3,25 +3,17 @@ import connectToDB from "@/dbconfig/dbconfig";
 import Budget from "@/models/budgetmodel";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import verifyAndGetUserid from "@/helpers/verifyandgetUserid";
 
 export async function GET(req) {
   try {
     await connectToDB();
     const token = req.cookies.get("token")?.value;
-    if (!token) {
-      return NextResponse.json(
-        {
-          message: "Unauthorized",
-        },
-        {
-          status: 401,
-        },
-      );
-    }
-    const decoded = jwt.verify(token, process.env.ACC_TOKEN_SEC);
+
+    const userID = verifyAndGetUserid(token);
 
     const budgets = await Budget.find({
-      createdBy: decoded.id,
+      createdBy: userID,
     })
       .populate("budgetCategory")
       .sort({
@@ -47,18 +39,10 @@ export async function POST(req) {
   try {
     await connectToDB();
     const token = req.cookies.get("token")?.value;
-    console.log("Token from cookies:", token);
-    if (!token) {
-      return NextResponse.json(
-        { message: "Unauthorized req" },
-        { status: 401 },
-      );
-    }
 
-    const decodedToken = jwt.verify(token, process.env.ACC_TOKEN_SEC);
-
-    const userId = decodedToken.id;
-    const { budgetAmount, periodType, startDate, budgetCategory, endDate } = await req.json();
+    const userID = verifyAndGetUserid(token);
+    const { budgetAmount, periodType, startDate, budgetCategory, endDate } =
+      await req.json();
     if (
       !budgetAmount ||
       !periodType ||
@@ -84,7 +68,7 @@ export async function POST(req) {
 
     //existing budget overlaping date
     const existingBudget = await Budget.findOne({
-      createdBy: userId,
+      createdBy: userID,
       budgetCategory: budgetCategoryObjId,
       startDate: {
         $lte: new Date(endDate),
@@ -110,7 +94,7 @@ export async function POST(req) {
       budgetCategory: budgetCategoryObjId,
       periodType,
       startDate,
-      createdBy: userId,
+      createdBy: userID,
       endDate,
     });
     const savedBudget = await newBudget.save();

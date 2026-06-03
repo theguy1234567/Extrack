@@ -1,21 +1,16 @@
 import { NextResponse } from "next/server";
 import Income from "@/models/incomemodel";
 import connectToDB from "@/dbconfig/dbconfig";
-import jwt from "jsonwebtoken";
+
+import verifyAndGetUserid from "@/helpers/verifyandgetUserid";
 
 export async function GET(req) {
   try {
     await connectToDB();
     const token = req.cookies.get("token")?.value;
-    console.log("Token from cookies:", token);
-    if (!token) {
-      return NextResponse.json(
-        { message: "Unauthorized req" },
-        { status: 400 },
-      );
-    }
-    const Incomes = await Income.find({}).sort({
-      createdAt: -1,
+    const userID = verifyAndGetUserid(token);
+    const Incomes = await Income.find({
+      createdBy: userID,
     });
     return NextResponse.json(
       { message: "Incomes gathered succesfully", success: true, data: Incomes },
@@ -39,12 +34,6 @@ export async function POST(req) {
     const reqbody = await req.json();
 
     const token = req.cookies.get("token")?.value;
-    if (!token) {
-      return NextResponse.json(
-        { message: "Unauthorized req" },
-        { status: 400 },
-      );
-    }
 
     const { IncomeSource, IncomeAmount, description } = reqbody;
 
@@ -55,13 +44,13 @@ export async function POST(req) {
       );
     }
 
-    const decodedToken = jwt.verify(token, process.env.ACC_TOKEN_SEC);
+    const userID = verifyAndGetUserid(token);
 
     const newIncome = new Income({
       IncomeSource,
       IncomeAmount,
       description: description || "",
-      createdBy: decodedToken?.id,
+      createdBy: userID,
     });
     const savedIncome = await newIncome.save();
     return NextResponse.json(

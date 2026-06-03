@@ -1,26 +1,19 @@
 import connectToDB from "@/dbconfig/dbconfig";
-import { NextResponse } from "next/server"; 
-import jwt from "jsonwebtoken";
+import { NextResponse } from "next/server";
+import jwt, { verify } from "jsonwebtoken";
 import Expense from "@/models/expensemodel";
 import Income from "@/models/incomemodel";
 import Budget from "@/models/budgetmodel";
 import Category from "@/models/categorymodel";
+import verifyAndGetUserid from "@/helpers/verifyandgetUserid";
 import mongoose from "mongoose";
 export async function GET(req) {
   try {
     await connectToDB();
 
     const token = req.cookies.get("token")?.value;
-    console.log("this is the jwttoken", token);
 
-    if (!token) {
-      return NextResponse.json(
-        { message: "Unauthorized Request" },
-        { status: 401 },
-      );
-    }
-    const decoded = jwt.verify(token, process.env.ACC_TOKEN_SEC);
-    const userID = decoded.id;
+    const userID = verifyAndGetUserid(token);
     const userIDobj = new mongoose.Types.ObjectId(userID);
 
     const [expenseRes, incomeRes] = await Promise.all([

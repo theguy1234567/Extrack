@@ -3,23 +3,16 @@ import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 import Expense from "@/models/expensemodel";
 import Category from "@/models/categorymodel";
+import verifyAndGetUserid from "@/helpers/verifyandgetUserid";
 await connectToDB();
 
 export async function GET(req) {
   try {
     const token = req.cookies.get("token")?.value;
 
-    console.log("Token from cookies:", token);
-    if (!token) {
-      return NextResponse.json(
-        { message: "Unauthorized req" },
-        { status: 401 },
-      );
-    }
-
-    const decoded = jwt.verify(token, process.env.ACC_TOKEN_SEC);
+    const userID = verifyAndGetUserid(token);
     const expenses = await Expense.find({
-      createdBy: decoded.id,
+      createdBy: userID,
     })
       .populate("expenseCategory")
       .sort({ createdAt: -1 });
@@ -61,16 +54,8 @@ export async function POST(req) {
 
     //validate token
 
-    const token = req.cookies.get("token")?.value;
-    console.log("Token from cookies:", token);
-    if (!token) {
-      return NextResponse.json(
-        { message: "Unauthorized req" },
-        { status: 401 },
-      );
-    }
-    const decoded = jwt.verify(token, process.env.ACC_TOKEN_SEC);
-    console.log("decoded  toknen user id:", decoded.id);
+    const userID = verifyAndGetUserid(token);
+
     if (!expenseName || !expenseAmount || !expenseCategory) {
       return NextResponse.json(
         { message: "Fill all the fields!!" },
@@ -82,12 +67,12 @@ export async function POST(req) {
 
     let newCreatedCategory = await Category.findOne({
       categoryName: categoryName,
-      createdBy: decoded.id,
+      createdBy: userID,
     });
     if (!newCreatedCategory) {
       newCreatedCategory = await Category.create({
         categoryName: categoryName,
-        createdBy: decoded.id,
+        createdBy: userID,
       });
     }
 
@@ -99,7 +84,7 @@ export async function POST(req) {
       recurrencePeriod: recurrencePeriod || undefined, // this is for the recurrencePeriod we gave enums in the model so a "" string is not a valid . if user gives take that or set it to undefined
       nextBillingDate,
       expenseCategory: newCreatedCategory._id,
-      createdBy: decoded.id,
+      createdBy: userID,
     });
     const savedexpense = await newexpense.save();
     return NextResponse.json(
