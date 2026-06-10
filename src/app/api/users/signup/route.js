@@ -11,7 +11,6 @@ export async function POST(req) {
     const reqBody = await req.json();
     const { username, email, password } = reqBody;
     // console.log(reqBody);
-
     console.log("user check in progress");
     const user = await User.findOne({ useremail: email });
 
