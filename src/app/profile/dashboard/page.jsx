@@ -7,6 +7,7 @@ function Dashboard() {
     totalExpenses: 0,
     totalIncomes: 0,
     totalSavings: 0,
+    categoryExpenses: {},
   });
   async function getExp() {
     try {
@@ -18,6 +19,7 @@ function Dashboard() {
         totalExpenses: res.data.totalExpenses,
         totalIncomes: res.data.totalIncomes,
         totalSavings: res.data.totalSavings,
+        categoryExpenses: res.data.categoryExpenses,
       });
     } catch (error) {
       console.log("something went wrong while fetching total expense");

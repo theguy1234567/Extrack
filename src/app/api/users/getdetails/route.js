@@ -16,7 +16,7 @@ export async function GET(req) {
     const userID = verifyAndGetUserid(token);
     const userIDobj = new mongoose.Types.ObjectId(userID);
 
-    const [expenseRes, incomeRes] = await Promise.all([
+    const [expenseRes, incomeRes, categoryexpRes] = await Promise.all([
       Expense.aggregate([
         {
           $match: { createdBy: userIDobj },
@@ -43,11 +43,46 @@ export async function GET(req) {
           },
         },
       ]),
+      Expense.aggregate([
+        {
+          $match: {
+            createdBy: userIDobj,
+          },
+        },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "expenseCategory",
+            foreignField: "_id",
+            as: "category",
+          },
+        },
+        //to change from [] to {}
+        {
+          $unwind: "$category",
+        },
+        {
+          $group: {
+            _id: "$category.categoryName",
+            total: {
+              $sum: "$expenseAmount",
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            category: "$_id",
+            total: 1,
+          },
+        },
+      ]),
     ]);
     const totalExpenses = expenseRes[0]?.total || 0;
     const totalIncomes = incomeRes[0]?.total || 0;
 
     const totalSavings = totalIncomes - totalExpenses;
+    const categoryExpenses = categoryexpRes;
 
     return NextResponse.json(
       {
@@ -55,6 +90,7 @@ export async function GET(req) {
         totalExpenses,
         totalIncomes,
         totalSavings,
+        categoryExpenses,
       },
       { status: 200 },
     );
