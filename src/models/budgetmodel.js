@@ -32,6 +32,7 @@ const BudgetSchema = new mongoose.Schema(
     endDate: {
       type: Date,
       required: true,
+      
     },
     status: {
       type: String,

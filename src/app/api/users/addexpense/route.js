@@ -28,6 +28,12 @@ export async function GET(req) {
     );
   } catch (error) {
     console.log("error in backend from get api expense", error);
+    if (error.message === "Unauthorized") {
+      return NextResponse.json(
+        { message: "Unauthorized request signin" },
+        { status: 401 },
+      );
+    }
     return NextResponse.json(
       {
         message: "Something went wrong while getting  the  Expenses",
@@ -53,6 +59,7 @@ export async function POST(req) {
     console.log("reqBody:", reqBody);
 
     //validate token
+    const token = req.cookies.get("token")?.value;
 
     const userID = verifyAndGetUserid(token);
 
