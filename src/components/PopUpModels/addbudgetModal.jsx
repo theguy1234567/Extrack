@@ -10,6 +10,7 @@ function AddBudgetModal() {
     budgetAmount: "",
     periodType: "",
     startDate: "",
+    budgetCategory: "",
     endDate: "",
   });
 
@@ -45,7 +46,6 @@ function AddBudgetModal() {
 
   return (
     <>
-      
       <button
         onClick={() => setOpen(true)}
         className="bg-black text-white px-4 py-2 rounded-md"
@@ -58,6 +58,15 @@ function AddBudgetModal() {
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-xl w-[400px] flex flex-col gap-4">
             <h1 className="text-2xl font-bold">Add Budget</h1>
+            <input
+              type="text"
+              name="BudgetCategory"
+              value={form.BudgetCategory}
+              onChange={handleChange}
+              placeholder="BudgetFor"
+              className="border p-2 
+              rounded-md"
+            />
 
             <input
               type="number"

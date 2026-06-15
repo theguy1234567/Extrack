@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import connectToDB from "@/dbconfig/dbconfig";
 import Budget from "@/models/budgetmodel";
-import jwt from "jsonwebtoken";
+
 import mongoose from "mongoose";
 import verifyAndGetUserid from "@/helpers/verifyandgetUserid";
 
@@ -26,7 +26,7 @@ export async function GET(req) {
       },
     );
   } catch (error) {
-    console.log("somethign went wrong in get budgets", error);
+    console.log("Something went wrong in get budgets", error);
     return NextResponse.json(
       { message: "Something webt wront in budgets gatherin", success: false },
       {

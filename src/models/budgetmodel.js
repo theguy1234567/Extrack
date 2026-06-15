@@ -13,7 +13,7 @@ const BudgetSchema = new mongoose.Schema(
       ref: "categories",
       required: true,
     },
-    // Budget and expenses can have categories might cause conflicts later check this
+    // Expense categories will act as the budget categories
 
     periodType: {
       type: String,
@@ -32,7 +32,6 @@ const BudgetSchema = new mongoose.Schema(
     endDate: {
       type: Date,
       required: true,
-      
     },
     status: {
       type: String,

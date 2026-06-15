@@ -23,7 +23,7 @@ const ExpenseSchema = new mongoose.Schema(
     },
     nextBillingDate: {
       type: Date,
-      //for subscriptions
+      //for subscriptions NOTE:SHOULD BE CALCULATED WITH A PREHOOK
     },
     expenseCategory: {
       type: Schema.Types.ObjectId,
@@ -40,3 +40,6 @@ const ExpenseSchema = new mongoose.Schema(
 const Expense =
   mongoose.models.expenses || mongoose.model("expenses", ExpenseSchema);
 export default Expense;
+
+// if the recurrencePeriod is true then based on the enums value the next billing date should be calculated 
+// and the when the subscription date arrives a request should pop up on the subscription page when accepted a expense should be created with category subscription
