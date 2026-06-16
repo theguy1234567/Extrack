@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import ExpenseCategoryChart from "@/components/charts/ExpenseCategoryChart";
+import IncomeExpenseBarChart from "@/components/charts/IncomeExpenseBarChart";
 
 function Dashboard() {
   const [dashbaorddata, setdashboardData] = useState({
@@ -63,16 +65,16 @@ function Dashboard() {
           </div>
 
           {/* Main Analytics */}
-          <div className="bg-blue-400 rounded-2xl px-4 py-4 col-span-2 row-span-2">
+          <div className="rounded-2xl px-4 py-4 col-span-2 row-span-2">
             Income vs Expense Trend
             <br />
-            Line / Area chart
+            <IncomeExpenseBarChart />
           </div>
 
-          <div className="bg-blue-400 rounded-2xl px-4 py-4 row-span-2">
+          <div className="rounded-2xl px-4 py-4 row-span-2">
             Category Breakdown
             <br />
-            Pie chart showing Food, Rent, Travel, etc.
+            <ExpenseCategoryChart />
           </div>
 
           <div className="bg-blue-400 rounded-2xl px-4 py-4">
