@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 function AddBudgetModal() {
   const [open, setOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
 
   const [form, setForm] = useState({
     budgetAmount: "",
@@ -13,6 +14,17 @@ function AddBudgetModal() {
     budgetCategory: "",
     endDate: "",
   });
+  async function showCategories() {
+    try {
+      const res = await axios.get("/api/users/getcategories", {
+        withCredentials: true,
+      });
+
+      setCategories(res.data.data);
+    } catch (error) {
+      console.log("error in getting catogories from frontend", error);
+    }
+  }
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -22,6 +34,9 @@ function AddBudgetModal() {
       [name]: value,
     }));
   }
+  useEffect(() => {
+    showCategories();
+  }, []);
 
   async function handleSubmit() {
     try {
@@ -58,15 +73,6 @@ function AddBudgetModal() {
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-xl w-[400px] flex flex-col gap-4">
             <h1 className="text-2xl font-bold">Add Budget</h1>
-            <input
-              type="text"
-              name="BudgetCategory"
-              value={form.BudgetCategory}
-              onChange={handleChange}
-              placeholder="BudgetFor"
-              className="border p-2 
-              rounded-md"
-            />
 
             <input
               type="number"
@@ -90,6 +96,20 @@ function AddBudgetModal() {
               <option value="monthly">Monthly</option>
 
               <option value="yearly">Yearly</option>
+            </select>
+            <select
+              name="budgetCategory"
+              value={form.budgetCategory}
+              onChange={handleChange}
+              className="border p-2 rounded-md"
+            >
+              <option value="">Select category</option>
+
+              {categories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.categoryName}
+                </option>
+              ))}
             </select>
 
             <input
