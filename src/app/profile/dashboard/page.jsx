@@ -3,13 +3,17 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import ExpenseCategoryChart from "@/components/charts/ExpenseCategoryChart";
 import IncomeExpenseBarChart from "@/components/charts/IncomeExpenseBarChart";
-
+import Card from "@/components/dashboard_components/Card";
+import { ChartData } from "@/components/charts/chartData";
+import { pieChartData } from "@/components/charts/pieChartData";
 function Dashboard() {
   const [dashbaorddata, setdashboardData] = useState({
     totalExpenses: 0,
     totalIncomes: 0,
     totalSavings: 0,
-    categoryExpenses: {},
+    categoryExpenses: [],
+    monthlyExpense: [],
+    monthlyIncome: [],
   });
   async function getExp() {
     try {
@@ -22,6 +26,8 @@ function Dashboard() {
         totalIncomes: res.data.totalIncomes,
         totalSavings: res.data.totalSavings,
         categoryExpenses: res.data.categoryExpenses,
+        monthlyExpense: res.data.monthlyExpenseRes,
+        monthlyIncome: res.data.monthlyIncomeRes,
       });
     } catch (error) {
       console.log("something went wrong while fetching total expense");
@@ -32,93 +38,39 @@ function Dashboard() {
   useEffect(() => {
     getExp();
   }, []);
+  //data for the charts
+  const income = Array(12).fill(0);
+  const expense = Array(12).fill(0);
+
+  dashbaorddata?.monthlyExpense.forEach((item) => {
+    expense[item.month - 1] = item.total;
+  });
+  dashbaorddata?.monthlyIncome.forEach((item) => {
+    income[item.month - 1] = item.total;
+  });
+  const chartData = ChartData(income, expense);
+  const pieData = pieChartData(dashbaorddata.categoryExpenses);
 
   return (
     <>
-      <div className="min-h-screen mt-10">
-        <div className="grid grid-cols-4 gap-3 auto-rows-[180px]">
+      <div className="min-h-screen ">
+        <div className="grid grid-cols-3 gap-3 auto-rows-[180px]">
           {/* KPI Cards */}
-          <div className="bg-blue-400 rounded-2xl px-4 py-4">
-            Total Expenses
-            {dashbaorddata.totalExpenses}
-            <br />
-          </div>
-
-          <div className="bg-blue-400 rounded-2xl px-4 py-4">
-            Total Income
-            {dashbaorddata.totalIncomes}
-            <br />
-            Shows all-time income
-          </div>
-
-          <div className="bg-blue-400 rounded-2xl px-4 py-4">
-            Total Savings
-            {dashbaorddata.totalSavings}
-            <br />
-            Income - Expenses
-          </div>
-
-          <div className="bg-blue-400 rounded-2xl px-4 py-4">
-            Monthly Budget Left
-            <br />
-            Remaining budget this month
-          </div>
+          <Card title="Income" value={dashbaorddata.totalIncomes} />
+          <Card title="Expenses" value={dashbaorddata.totalExpenses} />
+          <Card title="Savings" value={dashbaorddata.totalSavings} />
 
           {/* Main Analytics */}
           <div className="rounded-2xl px-4 py-4 col-span-2 row-span-2">
             Income vs Expense Trend
             <br />
-            <IncomeExpenseBarChart />
+            <IncomeExpenseBarChart chartData={chartData} />
           </div>
 
           <div className="rounded-2xl px-4 py-4 row-span-2">
             Category Breakdown
             <br />
-            <ExpenseCategoryChart />
-          </div>
-
-          <div className="bg-blue-400 rounded-2xl px-4 py-4">
-            Daily Spending Limit
-            <br />
-            Budget remaining today
-          </div>
-
-          {/* Secondary Analytics */}
-          <div className="bg-blue-400 rounded-2xl px-4 py-4 col-span-2">
-            Monthly Expense Heatmap
-            <br />
-            Spending intensity by day
-          </div>
-
-          <div className="bg-blue-400 rounded-2xl px-4 py-4">
-            Top Expense Category
-            <br />
-            Highest spending category
-          </div>
-
-          <div className="bg-blue-400 rounded-2xl px-4 py-4">
-            Most Recent Expense
-            <br />
-            Latest transaction
-          </div>
-
-          {/* Bottom Section */}
-          <div className="bg-blue-400 rounded-2xl px-4 py-4 col-span-2">
-            Budget Progress
-            <br />
-            Progress bars for each category budget
-          </div>
-
-          <div className="bg-blue-400 rounded-2xl px-4 py-4">
-            Upcoming Subscriptions
-            <br />
-            Netflix, Spotify, etc.
-          </div>
-
-          <div className="bg-blue-400 rounded-2xl px-4 py-4">
-            Financial Health Score
-            <br />
-            Savings rate + budget adherence
+            <ExpenseCategoryChart chartdata={pieData} />
           </div>
         </div>
       </div>

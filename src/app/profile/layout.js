@@ -1,17 +1,23 @@
-import Navigation from "@/components/Navigation";
+import { AppSidebar } from "@/components/AppSidebar.jsx";
 import Toolbar from "@/components/Toolbar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import "./globals.css";
 
 export default function Layout({ children }) {
   return (
-    <div className=" min-h-screen ">
-      <div className="flex ">
-        <Navigation />
-        <div className="w-full m-5 ">
+    <div className="flex h-screen bg-gray-100">
+      <SidebarProvider>
+        {/* Left */}
+        <AppSidebar />
+        <SidebarTrigger />
+
+        {/* Right */}
+        <div className="flex-1 flex flex-col">
           <Toolbar />
-          <div>{children}</div>
+
+          <main className="flex-1 p-6 overflow-y-auto">{children}</main>
         </div>
-      </div>
+      </SidebarProvider>
     </div>
   );
 }

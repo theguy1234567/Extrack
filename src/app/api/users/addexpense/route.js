@@ -106,6 +106,12 @@ export async function POST(req) {
     );
   } catch (error) {
     console.log("error in backend from Post api expense", error);
+    if (error.message === "Unauthorized") {
+      return NextResponse.json(
+        { message: "Unauthorized request signin" },
+        { status: 401 },
+      );
+    }
     return NextResponse.json(
       {
         message: "Something went wrong while adding a Expense",

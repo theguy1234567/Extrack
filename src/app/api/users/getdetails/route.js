@@ -16,7 +16,13 @@ export async function GET(req) {
     const userID = verifyAndGetUserid(token);
     const userIDobj = new mongoose.Types.ObjectId(userID);
 
-    const [expenseRes, incomeRes, categoryexpRes] = await Promise.all([
+    const [
+      expenseRes,
+      incomeRes,
+      categoryexpRes,
+      monthlyExpenseRes,
+      monthlyIncomeRes,
+    ] = await Promise.all([
       Expense.aggregate([
         {
           $match: { createdBy: userIDobj },
@@ -77,6 +83,68 @@ export async function GET(req) {
           },
         },
       ]),
+      Expense.aggregate([
+        {
+          $match: {
+            createdBy: userIDobj,
+          },
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" },
+            },
+            total: {
+              $sum: "$expenseAmount",
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            year: "$_id.year",
+            month: "$_id.month",
+            total: 1,
+          },
+        },
+        {
+          $sort: {
+            month: 1,
+          },
+        },
+      ]),
+      Income.aggregate([
+        {
+          $match: {
+            createdBy: userIDobj,
+          },
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" },
+            },
+            total: {
+              $sum: "$IncomeAmount",
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            year: "$_id.year",
+            month: "$_id.month",
+            total: 1,
+          },
+        },
+        {
+          $sort: {
+            month: 1,
+          },
+        },
+      ]),
     ]);
     const totalExpenses = expenseRes[0]?.total || 0;
     const totalIncomes = incomeRes[0]?.total || 0;
@@ -91,6 +159,8 @@ export async function GET(req) {
         totalIncomes,
         totalSavings,
         categoryExpenses,
+        monthlyExpenseRes,
+        monthlyIncomeRes,
       },
       { status: 200 },
     );

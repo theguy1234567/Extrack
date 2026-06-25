@@ -30,9 +30,7 @@ export async function POST(req) {
     };
     const accToken = await jwt.sign(tokendata, process.env.ACC_TOKEN_SEC, {
       expiresIn: "1d",
-    })
-    
-
+    });
 
     const response = NextResponse.json({
       message: "Login successfully!",
